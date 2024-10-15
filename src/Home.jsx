@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import {
   useGetSpectralDataQuery,
   useGetSignificantDataQuery,
@@ -5,9 +6,15 @@ import {
   useGetWindDataQuery,
 } from "./pages/spectralSlice";
 
+import Hourly from "./components/Hourly";
+
 import { LineChart } from "@mui/x-charts/LineChart";
 
 function Home() {
+  const [timeIncrement, setTimeIncrement] = useState("today");
+  const [hour, setHour] = useState(0);
+  const [meridiem, setMeridiem] = useState("");
+
   const { data: spectralData, isLoading: spectralDataLoading } =
     useGetSpectralDataQuery();
   const { data: significantData, isLoading: significantDataLoading } =
@@ -37,10 +44,11 @@ function Home() {
     denst.push(spectralData.densities[i]);
   }
 
-  const chartsParams = {
-    margin: { top: 10, bottom: 60, left: 40, right: 40 },
-    height: 300,
-  };
+
+  useEffect(() => {
+    setHour(currentHour > 12 ? currentHour - 12 : currentHour);
+    setMeridiem(currentHour >= 12 ? "PM" : "AM");
+  }, []);
 
   function degToCardinal(deg) {
     const dir = [
@@ -71,10 +79,10 @@ function Home() {
       swellComponentDataLoading ||
       spectralDataLoading ||
       windDataLoading ? (
-        <h1>Loading ...</h1>
+        <div className="flex flex-col h-screen bg-gradient-to-r from-blue-400 from-43% to-blue-500"></div>
       ) : (
         <>
-          <div className="flex flex-col bg-gradient-to-r from-blue-400 from-43% to-blue-500 h-screen">
+          <div className="flex flex-col h-screen bg-gradient-to-r from-blue-400 from-43% to-blue-500">
             <section className="flex flex-row justify-between mx-8 mt-12">
               <div>
                 <h2 className="font-radio text-2xl font-bold text-blue-100">
@@ -209,18 +217,100 @@ function Home() {
             </div>
 
             <section className="flex flex-row justify-between mx-8 mt-4">
-              <h3 className="font-radio font-normal text-blue-100">Today</h3>
-              <h3 className="font-radio font-normal text-blue-100">Tomorrow</h3>
-              <h3 className="font-radio font-normal text-blue-100">
-                Next 3 Days
-              </h3>
-              <h3 className="font-radio font-normal text-blue-100">Week</h3>
+              <section className="flex flex-col items-center">
+                <h3
+                  className={`"font-radio font-normal" + ${
+                    timeIncrement === "today"
+                      ? "text-highlight"
+                      : "text-blue-100"
+                  }`}
+                >
+                  Today
+                </h3>
+                <svg
+                  viewBox="0 0 24 24"
+                  xmlns="http://www.w3.org/2000/svg"
+                  className={`"w-5 h-5 fill-highlight self-start" + ${
+                    timeIncrement === "today" ? "visible" : "invisible"
+                  }`}
+                >
+                  <path d="M12 9.5C13.3807 9.5 14.5 10.6193 14.5 12C14.5 13.3807 13.3807 14.5 12 14.5C10.6193 14.5 9.5 13.3807 9.5 12C9.5 10.6193 10.6193 9.5 12 9.5Z" />
+                </svg>
+              </section>
+
+              <section className="flex flex-col items-center">
+                <h3
+                  className={`"font-radio font-normal" + ${
+                    timeIncrement === "tomorrow"
+                      ? "text-highlight"
+                      : "text-blue-100"
+                  }`}
+                >
+                  Tomorrow
+                </h3>
+                <svg
+                  viewBox="0 0 24 24"
+                  xmlns="http://www.w3.org/2000/svg"
+                  className={`"w-5 h-5  fill-highlight self-start" + ${
+                    timeIncrement === "tomorrow" ? "visible" : "invisible"
+                  }`}
+                >
+                  <path d="M12 9.5C13.3807 9.5 14.5 10.6193 14.5 12C14.5 13.3807 13.3807 14.5 12 14.5C10.6193 14.5 9.5 13.3807 9.5 12C9.5 10.6193 10.6193 9.5 12 9.5Z" />
+                </svg>
+              </section>
+
+              <section className="flex flex-col items-center">
+                <h3
+                  className={`"font-radio font-normal" + ${
+                    timeIncrement === "3days"
+                      ? "text-highlight"
+                      : "text-blue-100"
+                  }`}
+                >
+                  Next 3 Days
+                </h3>
+                <svg
+                  viewBox="0 0 24 24"
+                  xmlns="http://www.w3.org/2000/svg"
+                  className={`"w-5 h-5 fill-highlight self-start" + ${
+                    timeIncrement === "3days" ? "visible" : "invisible"
+                  }`}
+                >
+                  <path d="M12 9.5C13.3807 9.5 14.5 10.6193 14.5 12C14.5 13.3807 13.3807 14.5 12 14.5C10.6193 14.5 9.5 13.3807 9.5 12C9.5 10.6193 10.6193 9.5 12 9.5Z" />
+                </svg>
+              </section>
+
+              <section className="flex flex-col items-center">
+                <h3
+                  className={`"font-radio font-normal" + ${
+                    timeIncrement === "week"
+                      ? "text-highlight"
+                      : "text-blue-100"
+                  }`}
+                >
+                  Week
+                </h3>
+                <svg
+                  viewBox="0 0 24 24"
+                  xmlns="http://www.w3.org/2000/svg"
+                  className={`"w-5 h-5 fill-highlight self-start" + ${
+                    timeIncrement === "week" ? 'visible' : 'invisible'
+                  }`}
+                >
+                  <path d="M12 9.5C13.3807 9.5 14.5 10.6193 14.5 12C14.5 13.3807 13.3807 14.5 12 14.5C10.6193 14.5 9.5 13.3807 9.5 12C9.5 10.6193 10.6193 9.5 12 9.5Z" />
+                </svg>
+              </section>
+
+
             </section>
 
-          
             <section className="flex flex-col justify-center mx-8">
-              <div className="flex flex-row h-14 drop-shadow-md bg-blue-300 rounded-3xl mt-8"></div>
-
+              <Hourly
+                timeIncrement={timeIncrement}
+                setTimeIncrement={setTimeIncrement}
+                hour={hour}
+                meridiem={meridiem}
+              />
             </section>
           </div>
         </>
