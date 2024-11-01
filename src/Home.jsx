@@ -4,6 +4,7 @@ import {
   useGetSignificantDataQuery,
   useGetSwellComponentDataQuery,
   useGetWindDataQuery,
+  useGetGFSDataQuery,
 } from "./pages/spectralSlice";
 
 import Hourly from "./components/Hourly";
@@ -22,9 +23,15 @@ function Home() {
   const { data: swellComponentData, isLoading: swellComponentDataLoading } =
     useGetSwellComponentDataQuery();
   const { data: windData, isLoading: windDataLoading } = useGetWindDataQuery();
+  useGetGFSDataQuery();
+  const { data: GFSData, isLoading: GFSDataLoading } = useGetGFSDataQuery();
 
   const today = new Date();
   const currentHour = today.getHours();
+  // for hourly render
+  const hoursLeft = 24 - (currentHour + 1) + 23;
+  console.log(currentHour);
+  console.log(hoursLeft);
   const month = today.toLocaleString("en-US", { month: "long" });
   const day = today.toLocaleString("en-US", { weekday: "long" });
   const date = today.getDate();
@@ -39,16 +46,36 @@ function Home() {
       }
     }
   }
+
   const denst = [];
   for (let i = 0; i < freq.length; i++) {
     denst.push(spectralData.densities[i]);
   }
 
-
   useEffect(() => {
     setHour(currentHour > 12 ? currentHour - 12 : currentHour);
     setMeridiem(currentHour >= 12 ? "PM" : "AM");
   }, []);
+
+  let hoursArray = [];
+
+  if (!GFSDataLoading && !windDataLoading) {
+    for (let i = 0; i <= hoursLeft; i++) {
+      hoursArray.push(
+        <Hourly
+          timeIncrement={timeIncrement}
+          setTimeIncrement={setTimeIncrement}
+          hour={hour + 1 + i > 12 ? hour + 1 + i -12 : hour + 1 + i}
+          meridiem={hour + 1 + i >= 12 ? "AM" : "PM"}
+          sig_height={GFSData[i].significant_wave_height}
+          sig_period={GFSData[i].comp1_period}
+          sig_dir={GFSData[i].comp1_dir}
+          wind_speed={windData[currentHour + 1].speed}
+          wind_dir={windData[currentHour + 1].direction}
+        />
+      );
+    }
+  }
 
   function degToCardinal(deg) {
     const dir = [
@@ -78,11 +105,12 @@ function Home() {
       {significantDataLoading ||
       swellComponentDataLoading ||
       spectralDataLoading ||
-      windDataLoading ? (
+      windDataLoading ||
+      GFSDataLoading ? (
         <div className="flex flex-col h-screen bg-gradient-to-r from-blue-400 from-43% to-blue-500"></div>
       ) : (
         <>
-          <div className="flex flex-col h-screen bg-gradient-to-r from-blue-400 from-43% to-blue-500">
+          <div className="flex flex-col max-h-svh bg-gradient-to-r from-blue-400 from-43% to-blue-500">
             <section className="flex flex-row justify-between mx-8 mt-12">
               <div>
                 <h2 className="font-radio text-2xl font-bold text-blue-100">
@@ -294,23 +322,16 @@ function Home() {
                   viewBox="0 0 24 24"
                   xmlns="http://www.w3.org/2000/svg"
                   className={`"w-5 h-5 fill-highlight self-start" + ${
-                    timeIncrement === "week" ? 'visible' : 'invisible'
+                    timeIncrement === "week" ? "visible" : "invisible"
                   }`}
                 >
                   <path d="M12 9.5C13.3807 9.5 14.5 10.6193 14.5 12C14.5 13.3807 13.3807 14.5 12 14.5C10.6193 14.5 9.5 13.3807 9.5 12C9.5 10.6193 10.6193 9.5 12 9.5Z" />
                 </svg>
               </section>
-
-
             </section>
 
-            <section className="flex flex-col justify-center mx-8">
-              <Hourly
-                timeIncrement={timeIncrement}
-                setTimeIncrement={setTimeIncrement}
-                hour={hour}
-                meridiem={meridiem}
-              />
+            <section className="flex flex-col mx-8 mb-20 h-min-full overflow-auto">
+              {hoursArray.map((hour) => hour)}
             </section>
           </div>
         </>

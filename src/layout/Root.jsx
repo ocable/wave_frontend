@@ -3,7 +3,6 @@ import { Outlet } from "react-router-dom";
 import "../index.css";
 import Navbar from "./Navbar";
 
-
 export default function Root() {
   const [loading, setLoading] = useState(true);
   const [activePage, setActivePage] = useState("/");
@@ -21,9 +20,9 @@ export default function Root() {
           name="viewport"
           content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0"
         ></meta>
-        <Outlet context={[activePage, setActivePage]}/>
+        <Outlet context={[activePage, setActivePage]} />
       </main>
-      <Navbar activePage={activePage} setActivePage={setActivePage}/>
+      <Navbar activePage={activePage} setActivePage={setActivePage} />
     </>
   );
 }

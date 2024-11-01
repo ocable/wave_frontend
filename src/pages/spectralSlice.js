@@ -15,7 +15,10 @@ const spectralApi = api.injectEndpoints({
     getWindData: builder.query({
       query: () => "/wind",
     }),
+    getGFSData: builder.query({
+      query: () => "/GFS",
+    }),
   }),
 });
 
-export const { useGetSpectralDataQuery, useGetSignificantDataQuery, useGetSwellComponentDataQuery, useGetWindDataQuery } = spectralApi;
+export const { useGetSpectralDataQuery, useGetSignificantDataQuery, useGetSwellComponentDataQuery, useGetWindDataQuery, useGetGFSDataQuery } = spectralApi;

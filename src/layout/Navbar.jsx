@@ -20,7 +20,7 @@ export default function Navbar({ activePage, setActivePage }) {
 // console.log(activePage);
 
   return (
-    <div className="flex flex-row justify-between h-20 bg-blue-300 bottom-0 shadow-inner">
+    <div className="flex flex-row fixed w-full justify-between h-20 bg-blue-300 bottom-0 shadow-inner">
       <section className="flex flex-col items-center w-8 ml-10 mt-2" onClick={navHome}>
         <svg
           viewBox="0 0 24 24"
