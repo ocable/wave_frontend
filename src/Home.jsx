@@ -24,15 +24,19 @@ function Home() {
     useGetSwellComponentDataQuery();
   const { data: windData, isLoading: windDataLoading } = useGetWindDataQuery();
   useGetGFSDataQuery();
+
+  // console.log(windData);
+
   const { data: GFSData, isLoading: GFSDataLoading } = useGetGFSDataQuery();
 
   const today = new Date();
   const currentHour = today.getHours();
-  // for hourly render
-  const hoursLeft = 24 - (currentHour + 1) + 23;
   console.log(currentHour);
-  console.log(hoursLeft);
-  const month = today.toLocaleString("en-US", { month: "long" });
+  // for hourly render
+  const hoursleftDay = 24 - (currentHour + 1);
+  // console.log(currentHour);
+  // console.log(hoursLeft);
+  const month = today.toLocaleString("en-US", { month: "short" });
   const day = today.toLocaleString("en-US", { weekday: "long" });
   const date = today.getDate();
   const currentWindData = windDataLoading ? null : windData[currentHour];
@@ -55,25 +59,37 @@ function Home() {
   useEffect(() => {
     setHour(currentHour > 12 ? currentHour - 12 : currentHour);
     setMeridiem(currentHour >= 12 ? "PM" : "AM");
+    console.log(meridiem);
   }, []);
 
-  let hoursArray = [];
+  let hoursDay = [];
+  let hoursTomorrow = [];
+  let nextThreeDays = [];
+  let nextWeek = [];
 
   if (!GFSDataLoading && !windDataLoading) {
-    for (let i = 0; i <= hoursLeft; i++) {
-      hoursArray.push(
-        <Hourly
-          timeIncrement={timeIncrement}
-          setTimeIncrement={setTimeIncrement}
-          hour={hour + 1 + i > 12 ? hour + 1 + i -12 : hour + 1 + i}
-          meridiem={hour + 1 + i >= 12 ? "AM" : "PM"}
-          sig_height={GFSData[i].significant_wave_height}
-          sig_period={GFSData[i].comp1_period}
-          sig_dir={GFSData[i].comp1_dir}
-          wind_speed={windData[currentHour + 1].speed}
-          wind_dir={windData[currentHour + 1].direction}
-        />
-      );
+    const cycle = GFSData[0].cycle;
+    console.log(cycle);
+    hourlyMap(hoursleftDay, hoursDay, currentHour, cycle);
+    hourlyMap(11, hoursTomorrow, 12, cycle);
+
+    function hourlyMap(range, outputArray, startHour, cycle) {
+      for (let i = (startHour - cycle + 1); i < 24; i++) {
+        outputArray.push(
+          <Hourly
+            timeIncrement={timeIncrement}
+            setTimeIncrement={setTimeIncrement}
+            currentHour={currentHour}
+            hour={hour + 1 + i > 12 ? hour + 1 + i - 12 : hour + 1 + i}
+            meridiem={hour + 1 + i >= 12 ? "AM" : "PM"}
+            sig_height={GFSData[i].significant_wave_height * 3.28084}
+            sig_period={GFSData[i].comp1_period}
+            sig_dir={GFSData[i].comp1_dir}
+            wind_speed={windData[currentHour + i + 1].speed}
+            wind_dir={windData[currentHour + i + 1].direction}
+          />
+        );
+      }
     }
   }
 
@@ -97,7 +113,8 @@ function Home() {
       "NNW",
     ];
     const val = Math.round(deg / 22.5);
-    return dir[val];
+    // console.log(val);
+    return dir[val - 1];
   }
 
   return (
@@ -111,7 +128,8 @@ function Home() {
       ) : (
         <>
           <div className="flex flex-col max-h-svh bg-gradient-to-r from-blue-400 from-43% to-blue-500">
-            <section className="flex flex-row justify-between mx-8 mt-12">
+            {/* Header Section */}
+            <section className="flex flex-row justify-between align-middle mx-8 mt-6">
               <div>
                 <h2 className="font-radio text-2xl font-bold text-blue-100">
                   Higgins Beach
@@ -120,8 +138,10 @@ function Home() {
                   {day}, {month} {date}
                 </p>
               </div>
-              <div className="flex flex-col w-36 h-20 drop-shadow-md bg-blue-200 rounded-3xl">
-                <h3 className="self-center mt-2 font-radio font-bold text-xl text-blue-100">
+
+              {/* Wind Widget */}
+              <div className="flex flex-col ml-2 w-36 h-16 drop-shadow-md bg-blue-200 rounded-3xl">
+                <h3 className="self-center mt-1 font-radio font-bold text-xl text-blue-100">
                   {currentWindData.directionType}
                 </h3>
 
@@ -163,7 +183,7 @@ function Home() {
             </section>
 
             <section className="flex flex-row">
-              <h1 className="font-radio font-bold text-9xl text-blue-100 ml-8">
+              <h1 className="font-radio font-bold text-8xl text-blue-100 ml-8">
                 {significantData.sig_wave_height.toFixed(1)}
               </h1>
               <h5 className="self-end font-radio font-bold text-2xl text-blue-100 mb-3">
@@ -171,14 +191,14 @@ function Home() {
               </h5>
             </section>
 
-            <div className="flex flex-row h-24 w-10/12 drop-shadow-md bg-blue-300 rounded-3xl self-center pt-3 px-8 mt-4 justify-between">
+            <div className="flex flex-row h-24 w-10/12 drop-shadow-md bg-blue-300 rounded-3xl self-center pt-3 px-8 mt-4 pb-2 justify-between">
               <section className="flex flex-col">
                 <svg
                   viewBox="0 0 32 32"
                   id="Layer_1"
                   data-name="Layer 1"
                   xmlns="http://www.w3.org/2000/svg"
-                  className="h-6 w-6 fill-blue-100 self-center mx-2 mb-2"
+                  className="h-6 w-6 fill-blue-100 self-center mx-2 mb-1"
                 >
                   <path
                     d="M22,30H17a7.0078,7.0078,0,0,1-7-7,6.6832,6.6832,0,0,1,2.0244-4.6967A6.7935,6.7935,0,0,0,10.0093,18C5.0425,18.0466,4,24.5513,4,30H2C2,18.4907,6.3452,16.0342,9.9907,16a10.0717,10.0717,0,0,1,4.4785,1.117,1,1,0,0,1,.0616,1.73A4.8773,4.8773,0,0,0,17,28h5Z"
@@ -205,7 +225,7 @@ function Home() {
                   id="Layer_1"
                   data-name="Layer 1"
                   xmlns="http://www.w3.org/2000/svg"
-                  className="h-6 w-6 fill-blue-100 self-center mx-2 mb-2"
+                  className="h-6 w-6 fill-blue-100 self-center mx-2 mb-1"
                 >
                   <path
                     d="M22,30H17a7.0078,7.0078,0,0,1-7-7,6.6832,6.6832,0,0,1,2.0244-4.6967A6.7126,6.7126,0,0,0,10.0093,18C5.0425,18.0466,4,24.5513,4,30H2C2,18.4907,6.3452,16.0342,9.9907,16a10.0962,10.0962,0,0,1,4.4785,1.117,1,1,0,0,1,.0616,1.73A4.8773,4.8773,0,0,0,17,28h5Z"
@@ -221,15 +241,16 @@ function Home() {
                     transform="translate(0 0)"
                   />
                 </svg>
-                <h4 className="font-radio font-semibold text-3xl text-highlight self-center">
-                  {degToCardinal(significantData.direction)}°
+                <h4 className="font-radio font-semibold text-2xl mt-1 text-highlight self-center">
+                  {degToCardinal(significantData.direction)}
                 </h4>
+                {/* {console.log(degToCardinal(significantData.direction))} */}
               </section>
               <section className="flex flex-col">
                 <svg
                   viewBox="0 0 24 24"
                   xmlns="http://www.w3.org/2000/svg"
-                  className="h-5 w-5 fill-blue-100 self-center mt-1 mb-2"
+                  className="h-5 w-5 fill-blue-100 self-center mt-1 mb-1"
                 >
                   <path d="M19,8H14.724l3.144-5.5A1,1,0,0,0,17,1H10a1,1,0,0,0-.895.553l-5,10A1,1,0,0,0,5,13H9.656L7.042,21.713a1,1,0,0,0,1.722.933l11-13A1,1,0,0,0,19,8Zm-8.663,9.689,1.621-5.4A1,1,0,0,0,11,11H6.618l4-8h4.658L12.132,8.5A1,1,0,0,0,13,10h3.844Z" />
                 </svg>
@@ -249,8 +270,8 @@ function Home() {
                 <h3
                   className={`"font-radio font-normal" + ${
                     timeIncrement === "today"
-                      ? "text-highlight"
-                      : "text-blue-100"
+                      ? "text-highlight font-radio font-semibold"
+                      : "text-blue-100 font-radio font-semibold"
                   }`}
                 >
                   Today
@@ -270,8 +291,8 @@ function Home() {
                 <h3
                   className={`"font-radio font-normal" + ${
                     timeIncrement === "tomorrow"
-                      ? "text-highlight"
-                      : "text-blue-100"
+                      ? "text-highlight font-radio font-semibold"
+                      : "text-blue-100 font-radio font-semibold"
                   }`}
                 >
                   Tomorrow
@@ -291,8 +312,8 @@ function Home() {
                 <h3
                   className={`"font-radio font-normal" + ${
                     timeIncrement === "3days"
-                      ? "text-highlight"
-                      : "text-blue-100"
+                      ? "text-highlight font-radio font-semibold"
+                      : "text-blue-100 font-radio font-semibold"
                   }`}
                 >
                   Next 3 Days
@@ -312,8 +333,8 @@ function Home() {
                 <h3
                   className={`"font-radio font-normal" + ${
                     timeIncrement === "week"
-                      ? "text-highlight"
-                      : "text-blue-100"
+                      ? "text-highlight font-radio font-semibold"
+                      : "text-blue-100 font-radio font-semibold"
                   }`}
                 >
                   Week
@@ -330,8 +351,10 @@ function Home() {
               </section>
             </section>
 
-            <section className="flex flex-col mx-8 mb-20 h-min-full overflow-auto">
-              {hoursArray.map((hour) => hour)}
+            {/* Hourly Scroll */}
+            <section className="flex flex-col mx-8 mb-14 h-min-full overflow-auto">
+              {hoursDay.map((hour) => hour)}
+              {hoursTomorrow.map((hour) => hour)}
             </section>
           </div>
         </>
