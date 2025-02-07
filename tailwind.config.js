@@ -8,8 +8,8 @@ export default {
     colors: {
       transparent: "transparent",
       current: "currentColor",
-      black: "#000",
-      white: "#fff",
+      background: "#212121",
+      white: "#D9D9D9",
       blue: {
         100: "#16325B",
         200: "#189BC0",
@@ -21,7 +21,9 @@ export default {
         800: "#2c5282",
         900: "#2a4365",
       },
-      highlight: "#FFDC7F"
+      gray: "#363636",
+      highlight: "#7EB9D4",
+      border: "#4C4C4C"
     },
     fontFamily: {
       radio: ["Radio Canada Big", "sans-serif"],
