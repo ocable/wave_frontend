@@ -3,7 +3,6 @@ import ReactDOM from "react-dom/client";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import { Provider } from "react-redux";
 import store from "./store";
-import Spectra from "./pages/spectra.jsx";
 import Buoy from "./pages/Buoy.jsx";
 import Weather from "./pages/Weather.jsx";
 import "./index.css";
@@ -18,7 +17,6 @@ const router = createBrowserRouter([
     element: <Root />,
     children: [
       { path: "/", element: <Home /> },
-      { path: "/spectra", element: <Spectra /> },
       { path: "/buoy", element: <Buoy /> },
       { path: "/weather", element: <Weather /> },
     ],
