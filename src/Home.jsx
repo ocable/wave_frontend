@@ -165,6 +165,9 @@ function Home() {
               <h2 className="font-radio font-bold text-xl text-white mb-2">
                 Frequency Spectra
               </h2>
+              <h3 className="font-radio font-normal text-xs text-white">
+                m<sup>2</sup> / Hz vs period (sec)
+              </h3>
               <FrequencySpectra
                 frequencies={spectralData.frequencies}
                 densities={spectralData.densities}
