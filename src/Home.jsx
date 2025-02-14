@@ -169,7 +169,7 @@ function Home() {
                 frequencies={spectralData.frequencies}
                 densities={spectralData.densities}
               />
-              <DirectionalSpectra/>
+              {/* <DirectionalSpectra/> */}
             </section>
 
             {/* Timeframe labels */}
