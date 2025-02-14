@@ -22,7 +22,7 @@ export default function Root() {
         ></meta>
         <Outlet context={[activePage, setActivePage]} />
       </main>
-      <Navbar activePage={activePage} setActivePage={setActivePage} />
+      {/* <Navbar activePage={activePage} setActivePage={setActivePage} /> */}
     </>
   );
 }
