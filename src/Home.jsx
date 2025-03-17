@@ -12,7 +12,7 @@ import Hourly from "./components/Hourly";
 import WindWidget from "./components/WindWidget";
 import SwellComponentWidget from "./components/SwellComponentWidget";
 import FrequencySpectra from "./components/FrequencySpectra";
-import DirectionalSpectra from "./components/DirectionalSpectra"; 
+import DirectionalSpectra from "./components/DirectionalSpectra";
 
 import { LineChart } from "@mui/x-charts/LineChart";
 import { current } from "@reduxjs/toolkit";
@@ -131,6 +131,12 @@ function Home() {
     console.log(series);
   }
 
+  const [isOpen, setIsOpen] = useState(false);
+
+  const toggleDropdown = () => {
+    setIsOpen(!isOpen);
+  };
+
   return (
     <div>
       {significantDataLoading ||
@@ -143,8 +149,13 @@ function Home() {
         <>
           <div className="flex flex-col bg-background">
             {/* Header Section */}
-           
-            <SignificantWidget significantData={significantData} day={day} month={month} date={date}/>
+
+            <SignificantWidget
+              significantData={significantData}
+              day={day}
+              month={month}
+              date={date}
+            />
 
             {/* Wind Widget */}
 
@@ -155,19 +166,51 @@ function Home() {
             {swellComponentData.length === 1 ? (
               <SwellComponentWidget componentData={comp1} />
             ) : (
-              <div>
-                <SwellComponentWidget componentData={comp1} />
-                <SwellComponentWidget componentData={comp2} />
-              </div>
+              <>
+                <div className="flex flex-col justify-self-start">
+                  <div>
+                    <button
+                      onClick={toggleDropdown}
+                      className="inline-flex items-center justify-center w-full text-white px-4 py-2 text-xs font-medium text-gray-700 hover:bg-gray-50 focus:outline-none"
+                    >
+                      Swell Components
+                      <svg
+                        className="ml-1 mr-1 h-3 w-3"
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                        aria-hidden="true"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth="2"
+                          d="M19 9l-7 7-7-7"
+                        />
+                      </svg>
+                    </button>
+                  </div>
+
+                  {isOpen && (
+                    <div>
+                      <SwellComponentWidget componentData={comp1} />
+                      <SwellComponentWidget componentData={comp2} />
+                    </div>
+                  )}
+                </div>
+              </>
             )}
 
             <section className="flex flex-col justify-center items-center mt-4 mb-10">
               <h2 className="font-radio font-bold text-xl text-white mb-2">
                 Frequency Spectra
               </h2>
-              <h3 className="font-radio font-normal text-xs text-white">
-                m<sup>2</sup> / Hz vs period (sec)
-              </h3>
+              <div className="flex z-10 absolute bottom-[11.5rem] right-8">
+                <h3 className="font-radio font-normal text-[9px] text-white">
+                  m<sup>2</sup> / Hz vs period (sec)
+                </h3>
+              </div>
               <FrequencySpectra
                 frequencies={spectralData.frequencies}
                 densities={spectralData.densities}

@@ -6,6 +6,7 @@ import { scaleLinear } from "@visx/scale";
 import { LinePath } from "@visx/shape";
 import { Text } from "@visx/text";
 import { Grid } from "@visx/grid";
+import { format } from "@visx/vendor/d3-format";
 
 export default function FrequencySpectra({ frequencies, densities }) {
   const height = 200;
@@ -26,8 +27,8 @@ export default function FrequencySpectra({ frequencies, densities }) {
     data.push([1.0 / frequencies[i], densities[i]]);
   }
 
-  const maxX = Math.max(...data.map(item => item[0]));
-  const maxY = Math.max(...data.map(item => item[1]));
+  const maxX = Math.max(...data.map((item) => item[0]));
+  const maxY = Math.max(...data.map((item) => item[1]));
 
   const xScale = scaleLinear({
     range: [margin.left, xMax],
@@ -36,7 +37,7 @@ export default function FrequencySpectra({ frequencies, densities }) {
 
   const yScale = scaleLinear({
     range: [yMax, margin.top],
-    domain: [0, Math.ceil(maxY/.5)*.5],
+    domain: [0, Math.ceil(maxY / 0.5) * 0.5],
   });
 
   const colors = {
@@ -66,7 +67,7 @@ export default function FrequencySpectra({ frequencies, densities }) {
         yScale={yScale}
         width={xMax}
         height={yMax}
-        numTicksRows={maxY/.5+1}
+        numTicksRows={maxY / 0.5 + 1}
         numTicksColumns={8}
         top={0}
         left={margin.left}
@@ -91,7 +92,7 @@ export default function FrequencySpectra({ frequencies, densities }) {
       <Axis
         hideZero
         scale={yScale}
-        numTicks={maxY/.5+1}
+        numTicks={maxY / 0.5 + 1}
         left={margin.left}
         orientation="left"
         stroke={colors.darkGray}
@@ -162,21 +163,40 @@ export default function FrequencySpectra({ frequencies, densities }) {
         x={20}
         y={height / 2 + 20}
       >
-        (Price)
+        m2 / Hz
       </Text> */}
+      <foreignObject
+        x={-110}
+        y={height / 2 - 100}
+        width="50"
+        height="20"
+        transform="rotate(-90)"
+        style={{overflow: 'visible'}}
+      >
+        <div
+          xmlns="http://www.w3.org/1999/xhtml"
+          style={{
+            fontSize: "11px",
+            color: colors.gray,
+            whiteSpace: 'nowrap',
+          }}
+        >
+          m<sup>2</sup> / Hz
+        </div>
+      </foreignObject>
 
       {/* Y Axis title */}
-      {/* <Text
+      <Text
         style={{
           fill: colors.gray,
           fontSize: 11,
           fontWeight: 400,
         }}
         x={width/2-20}
-        y={height-2}
+        y={height-1}
       >
         Period (sec)
-      </Text> */}
+      </Text>
     </svg>
   );
 }
