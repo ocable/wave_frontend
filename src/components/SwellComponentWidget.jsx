@@ -1,6 +1,6 @@
 export default function SwellComponentWidget({ componentData }) {
   return (
-    <section className="flex flex-row justify-evenly mx-8 mt-3 mb-1 pt-1 bg-gray rounded-3xl ">
+    <section className="flex flex-row justify-evenly mx-8 mt-2 mb-1 pt-1 bg-gray rounded-3xl ">
       <div className="flex flex-col">
         <svg
           width="800px"

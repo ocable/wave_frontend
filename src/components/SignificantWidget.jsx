@@ -50,7 +50,7 @@ export default function SignificantWidget({
             ft
           </h5>
         </section>
-        <div className="flex flex-row h-24 sm:w-1/3 w-10/12 bg-background self-center pt-3 px-8 mt-2 pb-2 justify-between">
+        <div className="flex flex-row h-24 sm:w-1/3 w-10/12 bg-background self-center pt-2 px-8 justify-between">
           <section className="flex flex-col">
             <svg
               viewBox="0 0 32 32"
