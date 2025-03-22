@@ -173,7 +173,7 @@ export default function FrequencySpectra({ frequencies, densities }) {
         transform="rotate(-90)"
         style={{overflow: 'visible'}}
       >
-        <div
+        {/* <div
           xmlns="http://www.w3.org/1999/xhtml"
           style={{
             fontSize: "11px",
@@ -182,11 +182,11 @@ export default function FrequencySpectra({ frequencies, densities }) {
           }}
         >
           m<sup>2</sup> / Hz
-        </div>
+        </div> */}
       </foreignObject>
 
       {/* Y Axis title */}
-      <Text
+      {/* <Text
         style={{
           fill: colors.gray,
           fontSize: 11,
@@ -196,7 +196,7 @@ export default function FrequencySpectra({ frequencies, densities }) {
         y={height-1}
       >
         Period (sec)
-      </Text>
+      </Text> */}
     </svg>
   );
 }

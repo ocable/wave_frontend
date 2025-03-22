@@ -175,7 +175,7 @@ function Home() {
                     >
                       Swell Components
                       <svg
-                        className="ml-1 mr-1 h-3 w-3"
+                        className="ml-1 mr-1 h-4 w-3"
                         xmlns="http://www.w3.org/2000/svg"
                         fill="none"
                         viewBox="0 0 24 24"
@@ -202,11 +202,11 @@ function Home() {
               </>
             )}
 
-            <section className="flex flex-col justify-center items-center mt-4 mb-10">
+            <section className="flex flex-col justify-center items-center mt-2 mb-10">
               <h2 className="font-radio font-bold text-xl text-white mb-2">
                 Frequency Spectra
               </h2>
-              <div className="flex z-10 absolute bottom-[11.5rem] right-8">
+              <div className="flex absolute bottom-[1.5rem]">
                 <h3 className="font-radio font-normal text-[9px] text-white">
                   m<sup>2</sup> / Hz vs period (sec)
                 </h3>
