@@ -202,19 +202,17 @@ function Home() {
               </>
             )}
 
-            <section className="flex flex-col justify-center items-center mt-2 mb-10">
+            <section className="flex flex-col justify-center items-center mt-2 mb-6">
               <h2 className="font-radio font-bold text-xl text-white mb-2">
                 Frequency Spectra
               </h2>
-              <div className="flex absolute bottom-[1.5rem]">
-                <h3 className="font-radio font-normal text-[9px] text-white">
-                  m<sup>2</sup> / Hz vs period (sec)
-                </h3>
-              </div>
               <FrequencySpectra
                 frequencies={spectralData.frequencies}
                 densities={spectralData.densities}
               />
+              <h3 className="font-radio font-normal text-[9px] text-white">
+                m<sup>2</sup> / Hz vs period (sec)
+              </h3>
               {/* <DirectionalSpectra/> */}
             </section>
 
