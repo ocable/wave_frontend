@@ -150,7 +150,7 @@ function Home() {
         <div className="flex flex-col h-screen bg-background"></div>
       ) : (
         <>
-          <div className="flex flex-col bg-background">
+          <div className="flex flex-col h-screen bg-background">
             {/* Header Section */}
 
             <SignificantWidget
