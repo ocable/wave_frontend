@@ -5,6 +5,7 @@ import { Provider } from "react-redux";
 import store from "./store";
 import Buoy from "./pages/Buoy.jsx";
 import Weather from "./pages/Weather.jsx";
+import Forecast from "./pages/Forecast.jsx";
 import "./index.css";
 
 
@@ -19,6 +20,7 @@ const router = createBrowserRouter([
       { path: "/", element: <Home /> },
       { path: "/buoy", element: <Buoy /> },
       { path: "/weather", element: <Weather /> },
+      { path: "/forecast", element: <Forecast /> },
     ],
   },
 ]);

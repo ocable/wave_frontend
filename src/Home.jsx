@@ -35,15 +35,18 @@ function Home() {
 
   const today = new Date();
   const currentHour = today.getHours();
-  console.log("current hour:", currentHour);
+  const currentMin = today.getMinutes();
+  // console.log("current hour:", currentHour);
   // for hourly render
   const hoursleftDay = 24 - currentHour;
-  // console.log(currentHour);
+  console.log(currentHour);
   // console.log(hoursLeft);
   const month = today.toLocaleString("en-US", { month: "short" });
   const day = today.toLocaleString("en-US", { weekday: "long" });
   const date = today.getDate();
-  const currentWindData = windDataLoading ? null : windData[currentHour];
+
+  
+  //const currentWindData = windDataLoading ? null : windData[currentHour];
   const comp1 = swellComponentDataLoading ? null : swellComponentData[0];
   const comp2 = swellComponentDataLoading ? null : swellComponentData[1];
 
@@ -88,8 +91,8 @@ function Home() {
             sig_height={GFSData[i].significant_wave_height * 3.28084}
             sig_period={GFSData[i].comp1_period}
             sig_dir={GFSData[i].comp1_dir}
-            wind_speed={windData[currentHour + i + 1].speed}
-            wind_dir={windData[currentHour + i + 1].direction}
+            //wind_speed={windData[currentHour + i + 1].speed}
+            //wind_dir={windData[currentHour + i + 1].direction}
           />
         );
       }
@@ -155,11 +158,14 @@ function Home() {
               day={day}
               month={month}
               date={date}
+              hour={currentHour}
+              min={currentMin}
+              meridiem={meridiem}
             />
 
             {/* Wind Widget */}
 
-            <WindWidget windData={currentWindData} />
+            {/* <WindWidget windData={currentWindData} /> */}
 
             {/* Swell Component Widget */}
 
