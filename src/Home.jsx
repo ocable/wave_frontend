@@ -46,7 +46,7 @@ function Home() {
   const date = today.getDate();
 
   
-  //const currentWindData = windDataLoading ? null : windData[currentHour];
+  const currentWindData = windDataLoading ? null : windData[currentHour];
   const comp1 = swellComponentDataLoading ? null : swellComponentData[0];
   const comp2 = swellComponentDataLoading ? null : swellComponentData[1];
 
@@ -165,7 +165,7 @@ function Home() {
 
             {/* Wind Widget */}
 
-            {/* <WindWidget windData={currentWindData} /> */}
+            <WindWidget windData={currentWindData} />
 
             {/* Swell Component Widget */}
 
