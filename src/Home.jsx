@@ -29,8 +29,6 @@ function Home() {
   const { data: swellComponentData, isLoading: swellComponentDataLoading } =
     useGetSwellComponentDataQuery();
   const { data: windData, isLoading: windDataLoading } = useGetWindDataQuery();
-  useGetGFSDataQuery();
-
   const { data: GFSData, isLoading: GFSDataLoading } = useGetGFSDataQuery();
 
   const today = new Date();
@@ -45,7 +43,6 @@ function Home() {
   const day = today.toLocaleString("en-US", { weekday: "long" });
   const date = today.getDate();
 
-  
   const currentWindData = windDataLoading ? null : windData[currentHour];
   const comp1 = swellComponentDataLoading ? null : swellComponentData[0];
   const comp2 = swellComponentDataLoading ? null : swellComponentData[1];

@@ -33,7 +33,7 @@ function LocationDateHeader({ day, month, date, hour, min, meridiem }) {
         {/* </div> */}
       </div>
       <p className="font-radio text-md ml-1 font-normal text-white">
-        {day}, {month} {date}, {hour}:{min} {meridiem}
+        {day}, {month} {date}, {hour}:{String(min).padStart(2, "0")} {meridiem}
       </p>
     </section>
   );
