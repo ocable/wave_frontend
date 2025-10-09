@@ -1,6 +1,8 @@
 import { useState, useEffect, useMemo } from "react";
 import LocationDateHeader from "../components/LocationDateHeader";
 import ForecastSigWidget from "../components/ForecastSigWidget";
+import GFSSwellComponents from "../components/GFSSwellComponents";
+import WindWidget from "../components/WindWidget";
 import {
   useGetSpectralDataQuery,
   useGetSignificantDataQuery,
@@ -15,6 +17,7 @@ function forecast() {
   const { data: significantData, isLoading: significantDataLoading } =
     useGetSignificantDataQuery();
   const { data: GFSData, isLoading: GFSDataLoading } = useGetGFSDataQuery();
+  const { data: windData, isLoading: windDataLoading } = useGetWindDataQuery();
 
   // state to control meridiem
   const [meridiem, setMeridiem] = useState("");
@@ -118,6 +121,61 @@ function forecast() {
   const targetDay = targetDate.toLocaleString("en-US", { weekday: "long" });
   const targetDateNum = targetDate.getDate();
 
+  // Get the selected GFS data point based on increment and windowStart
+  const selectedGFSData = useMemo(() => {
+    if (!GFSData || GFSData.length === 0) return null;
+
+    // Find the starting index similar to WaveHeightGraph logic
+    const now = new Date();
+    const nextHourUTCMS = Date.UTC(
+      now.getUTCFullYear(),
+      now.getUTCMonth(),
+      now.getUTCDate(),
+      now.getUTCHours() + 1,
+      0,
+      0,
+      0
+    );
+
+    let startIndex = GFSData.findIndex((d) => {
+      const ts = Date.parse(d.timestamp);
+      return ts >= nextHourUTCMS;
+    });
+
+    if (startIndex === -1) {
+      startIndex = 0;
+    }
+
+    // Calculate the actual index considering windowStart and increment
+    const targetIndex = startIndex + windowStart + increment - 1;
+
+    // Return the data point if it exists
+    if (targetIndex >= 0 && targetIndex < GFSData.length) {
+      return GFSData[targetIndex];
+    }
+
+    return null;
+  }, [GFSData, windowStart, increment]);
+
+  // Get the selected wind data based on increment and windowStart
+  const selectedWindData = useMemo(() => {
+    if (!windData || windData.length === 0) return null;
+
+    // Simple: find wind data for current time + 1 hour
+    const now = new Date();
+    const targetTime = new Date(now);
+    targetTime.setHours(now.getHours() + 1 + increment - 1);
+    targetTime.setMinutes(0, 0, 0); // Round to top of hour
+
+    // Find the wind data object with matching timestamp
+    const targetWindData = windData.find((d) => {
+      const windTime = new Date(d.timestamp * 1000);
+      return windTime.getTime() === targetTime.getTime();
+    });
+
+    return targetWindData || null;
+  }, [windData, increment]);
+
   useEffect(() => {
     setHour(displayHour);
     setMeridiem(displayMeridiem);
@@ -126,7 +184,7 @@ function forecast() {
   //   console.log(range);
   return (
     <div>
-      {significantDataLoading || GFSDataLoading ? (
+      {significantDataLoading || GFSDataLoading || windDataLoading ? (
         <div className="flex flex-col h-screen bg-background"></div>
       ) : (
         <>
@@ -140,12 +198,12 @@ function forecast() {
               meridiem={meridiem}
             />
 
-            <section className="flex flex-row justify-center items-center mt-4 px-32">
+            <section className="flex flex-row justify-center items-center mt-4 mb-4 px-32">
               {/* Left Arrow - Decrease */}
               <button
                 onClick={handleDecrease}
                 disabled={increment <= 1 && !canSlideLeft}
-                className={`p-2 rounded-full ${
+                className={`pr-8 rounded-full ${
                   increment <= 1 && !canSlideLeft
                     ? "text-gray cursor-not-allowed"
                     : "text-white hover:text-highlight"
@@ -216,7 +274,7 @@ function forecast() {
               <button
                 onClick={handleIncrease}
                 disabled={increment >= range && !canSlideRight}
-                className={`p-2 rounded-full ${
+                className={`pl-8 rounded-full ${
                   increment >= range && !canSlideRight
                     ? "text-gray cursor-not-allowed"
                     : "text-white hover:text-highlight"
@@ -249,6 +307,19 @@ function forecast() {
               setIncrement={setIncrement}
               windowStart={windowStart}
             />
+
+            {/* GFS Swell Components for selected time */}
+            <GFSSwellComponents selectedGFSData={selectedGFSData} />
+
+            {/* Wind Data for selected time */}
+            {selectedWindData && (
+              <div className="mt-4">
+                <h3 className="font-radio font-bold text-lg text-white text-center mb-2">
+                  Wind Forecast
+                </h3>
+                <WindWidget windData={selectedWindData} />
+              </div>
+            )}
 
             {/* <ForecastSigWidget
               significantData={significantData}

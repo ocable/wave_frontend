@@ -140,204 +140,223 @@ export default function WaveHeightGraph({
   };
 
   return (
-    <svg
-      height={height}
-      width={width}
-      style={{ cursor: setIncrement ? "pointer" : "default" }}
-      onClick={(e) => {
-        if (!setIncrement || !comp1Heights.length) return;
-        const rect = e.currentTarget.getBoundingClientRect();
-        const x = e.clientX - rect.left; // pixels within svg
-        // Invert xScale: linear scale domain is [0, n-1]
-        const scaled = ((x - margin.left) / xMax) * (comp1Heights.length - 1);
-        let idx = Math.round(scaled);
-        if (idx < 0) idx = 0;
-        if (idx > comp1Heights.length - 1) idx = comp1Heights.length - 1;
-        // increment is 1-based relative to first hour shown
-        const newIncrement = idx + 1;
-        if (newIncrement !== increment) setIncrement(newIncrement);
-      }}
-    >
-      {/* Background Rectangle */}
-      <rect
-        x={0}
-        y={0}
-        width={width}
+    <div className="flex justify-center w-full">
+      <svg
         height={height}
-        style={{
-          fill: colors.black,
+        width={width}
+        style={{ cursor: setIncrement ? "pointer" : "default" }}
+        onClick={(e) => {
+          if (!setIncrement || !comp1Heights.length) return;
+          const rect = e.currentTarget.getBoundingClientRect();
+          const x = e.clientX - rect.left; // pixels within svg
+          // Invert xScale: linear scale domain is [0, n-1]
+          const scaled = ((x - margin.left) / xMax) * (comp1Heights.length - 1);
+          let idx = Math.round(scaled);
+          if (idx < 0) idx = 0;
+          if (idx > comp1Heights.length - 1) idx = comp1Heights.length - 1;
+          // increment is 1-based relative to first hour shown
+          const newIncrement = idx + 1;
+          if (newIncrement !== increment) setIncrement(newIncrement);
         }}
-        rx={20}
-      />
-      {/* Grid */}
-      <Grid
-        xScale={xScale}
-        yScale={yScale}
-        width={xMax}
-        height={yMax}
-        numTicksRows={paddedMax + 1}
-        numTicksColumns={0} // suppress default vertical columns; custom guides drawn later
-        top={0}
-        left={margin.left}
-        stroke={colors.darkGray}
-      />
-      {/* X Axis (dynamic hours or dates) */}
-      {(() => {
-        if (!data.length) return null;
-        let tickIndices = [];
-        if (range <= 24) {
-          const step = range === 24 ? 2 : 1; // 2-hour ticks for 24h view
-          const maxHours = Math.min(range, data.length);
-          for (let i = 0; i < maxHours; i += step) tickIndices.push(i);
-        } else if (range >= 72) {
-          // Multi-day: choose step based on total hours to show multiple date labels
-          // Aim ~12 ticks max
-          const totalHours = Math.min(range, data.length); // data.length approximates hours ahead
-          let hourStep;
-          if (totalHours <= 96) hourStep = 12; // every half day
-          else if (totalHours <= 168) hourStep = 24; // daily
-          else hourStep = 24; // default daily
-          for (let i = 0; i < data.length; i += hourStep) {
-            tickIndices.push(i);
-          }
-          // Ensure last point's day appears
-          if (tickIndices[tickIndices.length - 1] !== data.length - 1) {
-            tickIndices.push(data.length - 1);
-          }
-        } else {
-          // fallback treat as hourly range
-          const maxHours = Math.min(range, data.length);
-          for (let i = 0; i < maxHours; i++) tickIndices.push(i);
-        }
+      >
+        {/* Background Rectangle */}
+        <rect
+          x={0}
+          y={0}
+          width={width}
+          height={height}
+          style={{
+            fill: colors.black,
+          }}
+          rx={20}
+        />
+        {/* Grid */}
+        <Grid
+          xScale={xScale}
+          yScale={yScale}
+          width={xMax}
+          height={yMax}
+          numTicksRows={paddedMax + 1}
+          numTicksColumns={0} // suppress default vertical columns; custom guides drawn later
+          top={0}
+          left={margin.left}
+          stroke={colors.darkGray}
+        />
+        {/* X Axis (dynamic hours or dates) */}
+        {(() => {
+          if (!data.length) return null;
+          let tickIndices = [];
+          if (range <= 24) {
+            const step = range === 24 ? 2 : 1; // 2-hour ticks for 24h view
+            const maxHours = Math.min(range, data.length);
+            for (let i = 0; i < maxHours; i += step) tickIndices.push(i);
+          } else if (range >= 72) {
+            // Multi-day: Calculate dates based on today + range
+            const today = new Date();
+            const totalHours = Math.min(range, data.length);
+            let hourStep;
 
-        // Store for vertical guide rendering
-        latestTickIndices = tickIndices.slice();
-        // Offset-based labeling (0..range) while displaying absolute hour from currentHour
-        return (
-          <Axis
-            scale={xScale}
-            top={height - margin.bottom}
-            orientation="bottom"
-            stroke={colors.darkGray}
-            strokeWidth={1.5}
-            tickValues={tickIndices}
-            tickLabelProps={() => ({
-              fill: colors.gray,
-              textAnchor: "middle",
-              verticalAnchor: "middle",
-              fontSize: 10,
-            })}
-            tickFormat={(value) => {
-              const idx = Math.round(value);
-              if (idx < 0 || idx >= data.length) return "";
-              if (range <= 24) {
-                const base =
-                  typeof currentHour === "number"
-                    ? currentHour
-                    : data[0].time.getHours();
-                const absoluteHour = (base + idx) % 24;
-                return absoluteHour;
+            if (totalHours <= 96) hourStep = 24; // daily for 4 days or less
+            else if (totalHours <= 168) hourStep = 24; // daily for a week
+            else hourStep = 48; // every 2 days for longer periods
+
+            tickIndices = [];
+            for (let i = 0; i < data.length; i += hourStep) {
+              if (i < data.length) {
+                tickIndices.push(i);
               }
-              if (range >= 72) {
-                const t = data[idx].time;
-                return t.getMonth() + 1 + "/" + t.getDate();
+            }
+
+            // Always include the last point if it's not too close to the previous tick
+            const lastIdx = data.length - 1;
+            if (lastIdx > 0 && tickIndices.length > 0) {
+              const lastTick = tickIndices[tickIndices.length - 1];
+              if (lastIdx - lastTick >= 12) {
+                // at least 12 hours apart
+                tickIndices.push(lastIdx);
               }
-              return "";
-            }}
-          />
-        );
-      })()}
-      {/* Vertical guide lines aligned with tick labels */}
-      {latestTickIndices.map((ti, i) => {
-        const xPos = xScale(ti);
-        return (
-          <line
-            key={"vguide-" + i}
-            x1={xPos}
-            x2={xPos}
-            y1={margin.top}
-            y2={yMax}
-            stroke={colors.darkGray}
-            strokeWidth={0.75}
-            opacity={0.6}
-          />
-        );
-      })}
-      {/* Moving selection line (increment - 1 index) */}
-      {increment &&
-        comp1Heights.length > 0 &&
-        increment - 1 < comp1Heights.length && (
-          <line
-            x1={xScale(increment - 1)}
-            x2={xScale(increment - 1)}
-            y1={margin.top}
-            y2={yMax}
-            stroke={colors.accent}
-            strokeWidth={1.5}
-            strokeDasharray="4 4"
-          />
-        )}
-      {/* Y Axis */}
-      <Axis
-        hideZero
-        scale={yScale}
-        numTicks={paddedMax + 1}
-        left={margin.left}
-        orientation="left"
-        stroke={colors.darkGray}
-        strokeWidth={1.5}
-        tickLabelProps={() => ({
-          fill: colors.gray,
-          textAnchor: "end",
-          verticalAnchor: "middle",
-          fontSize: 10,
+            }
+          } else {
+            // fallback treat as hourly range
+            const maxHours = Math.min(range, data.length);
+            for (let i = 0; i < maxHours; i++) tickIndices.push(i);
+          }
+
+          // Store for vertical guide rendering
+          latestTickIndices = tickIndices.slice();
+          // Offset-based labeling (0..range) while displaying absolute hour from currentHour
+          return (
+            <Axis
+              scale={xScale}
+              top={height - margin.bottom}
+              orientation="bottom"
+              stroke={colors.darkGray}
+              strokeWidth={1.5}
+              tickValues={tickIndices}
+              tickLabelProps={() => ({
+                fill: colors.gray,
+                textAnchor: "middle",
+                verticalAnchor: "middle",
+                fontSize: 10,
+              })}
+              tickFormat={(value) => {
+                const idx = Math.round(value);
+                if (idx < 0 || idx >= data.length) return "";
+                if (range <= 24) {
+                  const base =
+                    typeof currentHour === "number"
+                      ? currentHour
+                      : data[0].time.getHours();
+                  const absoluteHour = (base + idx) % 24;
+                  return absoluteHour;
+                }
+                if (range >= 72) {
+                  // Calculate date based on today + hours offset (including windowStart)
+                  const today = new Date();
+                  const hoursFromNow = windowStart + idx;
+                  const targetDate = new Date(
+                    today.getTime() + hoursFromNow * 60 * 60 * 1000
+                  );
+                  // Format as M/D to show month/day
+                  return targetDate.getMonth() + 1 + "/" + targetDate.getDate();
+                }
+                return "";
+              }}
+            />
+          );
+        })()}
+        {/* Vertical guide lines aligned with tick labels */}
+        {latestTickIndices.map((ti, i) => {
+          const xPos = xScale(ti);
+          return (
+            <line
+              key={"vguide-" + i}
+              x1={xPos}
+              x2={xPos}
+              y1={margin.top}
+              y2={yMax}
+              stroke={colors.darkGray}
+              strokeWidth={0.75}
+              opacity={0.6}
+            />
+          );
         })}
-        tickFormat={(value) => `${value}ft`}
-      />
-      {/* Gradients for area and line */}
-      <LinearGradient
-        id="comp1-area-gradient"
-        from={colors.accent}
-        to={colors.accent}
-        fromOpacity={0.35}
-        toOpacity={0}
-      />
-      {/* Gradient for comp1 height line */}
-      <LinearGradient
-        id="comp1-gradient"
-        from={colors.accent}
-        to={colors.darkAccent}
-      />
-      {/* Shaded area under line */}
-      <AreaClosed
-        data={data}
-        x={(d) => xScale(d.index)}
-        y={(d) => yScale(d.height)}
-        yScale={yScale}
-        stroke={"none"}
-        fill="url('#comp1-area-gradient')"
-        curve={curveNatural}
-      />
-      <LinePath
-        data={data}
-        x={(d) => xScale(d.index)}
-        y={(d) => yScale(d.height)}
-        stroke="url('#comp1-gradient')"
-        strokeWidth={2.5}
-        curve={curveNatural}
-      />
-      {/* Y Axis label removed per request */}
-      {/* X Axis label */}
-      <Text
-        style={{
-          fill: colors.gray,
-          fontSize: 11,
-          fontWeight: 400,
-        }}
-        x={width / 2}
-        y={height - 5}
-        textAnchor="middle"
-      ></Text>
-    </svg>
+        {/* Moving selection line (increment - 1 index) */}
+        {increment &&
+          comp1Heights.length > 0 &&
+          increment - 1 < comp1Heights.length && (
+            <line
+              x1={xScale(increment - 1)}
+              x2={xScale(increment - 1)}
+              y1={margin.top}
+              y2={yMax}
+              stroke={colors.accent}
+              strokeWidth={1.5}
+              strokeDasharray="4 4"
+            />
+          )}
+        {/* Y Axis */}
+        <Axis
+          hideZero
+          scale={yScale}
+          numTicks={paddedMax + 1}
+          left={margin.left}
+          orientation="left"
+          stroke={colors.darkGray}
+          strokeWidth={1.5}
+          tickLabelProps={() => ({
+            fill: colors.gray,
+            textAnchor: "end",
+            verticalAnchor: "middle",
+            fontSize: 10,
+          })}
+          tickFormat={(value) => `${value}ft`}
+        />
+        {/* Gradients for area and line */}
+        <LinearGradient
+          id="comp1-area-gradient"
+          from={colors.accent}
+          to={colors.accent}
+          fromOpacity={0.35}
+          toOpacity={0}
+        />
+        {/* Gradient for comp1 height line */}
+        <LinearGradient
+          id="comp1-gradient"
+          from={colors.accent}
+          to={colors.darkAccent}
+        />
+        {/* Shaded area under line */}
+        <AreaClosed
+          data={data}
+          x={(d) => xScale(d.index)}
+          y={(d) => yScale(d.height)}
+          yScale={yScale}
+          stroke={"none"}
+          fill="url('#comp1-area-gradient')"
+          curve={curveNatural}
+        />
+        <LinePath
+          data={data}
+          x={(d) => xScale(d.index)}
+          y={(d) => yScale(d.height)}
+          stroke="url('#comp1-gradient')"
+          strokeWidth={2.5}
+          curve={curveNatural}
+        />
+        {/* Y Axis label removed per request */}
+        {/* X Axis label */}
+        <Text
+          style={{
+            fill: colors.gray,
+            fontSize: 11,
+            fontWeight: 400,
+          }}
+          x={width / 2}
+          y={height - 5}
+          textAnchor="middle"
+        ></Text>
+      </svg>
+    </div>
   );
 }
