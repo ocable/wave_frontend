@@ -32,7 +32,7 @@ export default function WindWidget({ windData }) {
           />
         </svg>
         <h4 className="mr-1 font-radio font-semibold text-lg text-white">
-          {Math.round(windData.speed)}
+          {Math.round(windData.speed * 1.15078)}
         </h4>
         <h5 className="font-radio font-semibold text-sm text-white self-center">
           mph

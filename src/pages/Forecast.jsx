@@ -1,6 +1,10 @@
 import { useState, useEffect, useMemo } from "react";
 import LocationDateHeader from "../components/LocationDateHeader";
 import ForecastSigWidget from "../components/ForecastSigWidget";
+import GFSSwellComponents from "../components/GFSSwellComponents";
+import PrimarySwellInfo from "../components/PrimarySwellInfo";
+import PrimaryWindInfo from "../components/PrimaryWindInfo";
+import WindWidget from "../components/WindWidget";
 import {
   useGetSpectralDataQuery,
   useGetSignificantDataQuery,
@@ -10,11 +14,13 @@ import {
 } from "../pages/spectralSlice";
 
 import WaveHeightGraph from "../components/WaveHeightGraph";
+import WindGraph from "../components/WindGraph";
 
 function forecast() {
   const { data: significantData, isLoading: significantDataLoading } =
     useGetSignificantDataQuery();
   const { data: GFSData, isLoading: GFSDataLoading } = useGetGFSDataQuery();
+  const { data: windData, isLoading: windDataLoading } = useGetWindDataQuery();
 
   // state to control meridiem
   const [meridiem, setMeridiem] = useState("");
@@ -118,6 +124,79 @@ function forecast() {
   const targetDay = targetDate.toLocaleString("en-US", { weekday: "long" });
   const targetDateNum = targetDate.getDate();
 
+  // Get the selected GFS data point based on increment and windowStart
+  const selectedGFSData = useMemo(() => {
+    if (!GFSData || GFSData.length === 0) return null;
+
+    // Find the starting index similar to WaveHeightGraph logic
+    const now = new Date();
+    const nextHourUTCMS = Date.UTC(
+      now.getUTCFullYear(),
+      now.getUTCMonth(),
+      now.getUTCDate(),
+      now.getUTCHours() + 1,
+      0,
+      0,
+      0
+    );
+
+    let startIndex = GFSData.findIndex((d) => {
+      const ts = Date.parse(d.timestamp);
+      return ts >= nextHourUTCMS;
+    });
+
+    if (startIndex === -1) {
+      startIndex = 0;
+    }
+
+    // Calculate the actual index considering windowStart and increment
+    const targetIndex = startIndex + windowStart + increment - 1;
+
+    // Return the data point if it exists
+    if (targetIndex >= 0 && targetIndex < GFSData.length) {
+      return GFSData[targetIndex];
+    }
+
+    return null;
+  }, [GFSData, windowStart, increment]);
+
+  // Get the selected wind data based on increment and windowStart
+  const selectedWindData = useMemo(() => {
+    if (!windData || windData.length === 0) return null;
+
+    // Use the same logic as WindGraph
+    const now = new Date();
+    const nextHourUTCMS = Date.UTC(
+      now.getUTCFullYear(),
+      now.getUTCMonth(),
+      now.getUTCDate(),
+      now.getUTCHours() + 1,
+      0,
+      0,
+      0
+    );
+
+    // Find first index whose UTC timestamp >= nextHourUTCMS
+    let startIndex = windData.findIndex((d) => {
+      const ts = Date.parse(d.timestamp);
+      return ts >= nextHourUTCMS;
+    });
+
+    if (startIndex === -1) {
+      startIndex = 0;
+    }
+
+    // Calculate the target index considering windowStart and increment
+    const targetIndex = startIndex + windowStart + increment - 1;
+
+    // Return the data point if it exists
+    if (targetIndex >= 0 && targetIndex < windData.length) {
+      return windData[targetIndex];
+    }
+
+    return null;
+  }, [windData, increment, windowStart]);
+
   useEffect(() => {
     setHour(displayHour);
     setMeridiem(displayMeridiem);
@@ -126,51 +205,53 @@ function forecast() {
   //   console.log(range);
   return (
     <div>
-      {significantDataLoading || GFSDataLoading ? (
+      {significantDataLoading || GFSDataLoading || windDataLoading ? (
         <div className="flex flex-col h-screen bg-background"></div>
       ) : (
         <>
-          <div className="flex flex-col h-screen bg-background">
-            <LocationDateHeader
-              day={targetDay}
-              month={targetMonth}
-              date={targetDateNum}
-              hour={hour}
-              min={currentMin}
-              meridiem={meridiem}
-            />
+          <div className="flex flex-col h-screen bg-background overflow-hidden">
+            {/* Sticky Header Section */}
+            <div className="sticky top-0 z-10 bg-background">
+              <LocationDateHeader
+                day={targetDay}
+                month={targetMonth}
+                date={targetDateNum}
+                hour={hour}
+                min={currentMin}
+                meridiem={meridiem}
+              />
 
-            <section className="flex flex-row justify-center items-center mt-4 px-32">
-              {/* Left Arrow - Decrease */}
-              <button
-                onClick={handleDecrease}
-                disabled={increment <= 1 && !canSlideLeft}
-                className={`p-2 rounded-full ${
-                  increment <= 1 && !canSlideLeft
-                    ? "text-gray cursor-not-allowed"
-                    : "text-white hover:text-highlight"
-                }`}
-              >
-                <svg
-                  width="24"
-                  height="24"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="w-6 h-6"
+              <section className="flex flex-row justify-center items-center mt-4 mb-4 px-32">
+                {/* Left Arrow - Decrease */}
+                <button
+                  onClick={handleDecrease}
+                  disabled={increment <= 1 && !canSlideLeft}
+                  className={`pr-8 rounded-full ${
+                    increment <= 1 && !canSlideLeft
+                      ? "text-gray cursor-not-allowed"
+                      : "text-white hover:text-highlight"
+                  }`}
                 >
-                  <path
-                    d="M15 18L9 12L15 6"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                </svg>
-              </button>
+                  <svg
+                    width="24"
+                    height="24"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="w-6 h-6"
+                  >
+                    <path
+                      d="M15 18L9 12L15 6"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                  </svg>
+                </button>
 
-              <div className="flex flex-row justify-center space-x-8">
-                {/* <h2
+                <div className="flex flex-row justify-center space-x-8">
+                  {/* <h2
             className={`"font-bold text-white" + ${
               range === 1 ? "text-highlight" : "text-white"
             }`}
@@ -178,79 +259,111 @@ function forecast() {
           >
             1h
           </h2> */}
-                <h2
-                  className={`"font-extrabold text-white" + ${
-                    range === 6 ? "text-highlight" : "text-white"
+                  <h2
+                    className={`"font-extrabold text-white" + ${
+                      range === 6 ? "text-highlight" : "text-white"
+                    }`}
+                    onClick={() => setRange(6)}
+                  >
+                    6h
+                  </h2>
+                  <h2
+                    className={`"font-extrabold text-white" + ${
+                      range === 24 ? "text-highlight" : "text-white"
+                    }`}
+                    onClick={() => setRange(24)}
+                  >
+                    1d
+                  </h2>
+                  <h2
+                    className={`"font-bold text-white" + ${
+                      range === 72 ? "text-highlight" : "text-white"
+                    }`}
+                    onClick={() => setRange(72)}
+                  >
+                    3d
+                  </h2>
+                  <h2
+                    className={`"font-bold text-white" + ${
+                      range === 168 ? "text-highlight" : "text-white"
+                    }`}
+                    onClick={() => setRange(168)}
+                  >
+                    7d
+                  </h2>
+                </div>
+
+                {/* Right Arrow - Increase */}
+                <button
+                  onClick={handleIncrease}
+                  disabled={increment >= range && !canSlideRight}
+                  className={`pl-8 rounded-full ${
+                    increment >= range && !canSlideRight
+                      ? "text-gray cursor-not-allowed"
+                      : "text-white hover:text-highlight"
                   }`}
-                  onClick={() => setRange(6)}
                 >
-                  6h
-                </h2>
-                <h2
-                  className={`"font-extrabold text-white" + ${
-                    range === 24 ? "text-highlight" : "text-white"
-                  }`}
-                  onClick={() => setRange(24)}
-                >
-                  1d
-                </h2>
-                <h2
-                  className={`"font-bold text-white" + ${
-                    range === 72 ? "text-highlight" : "text-white"
-                  }`}
-                  onClick={() => setRange(72)}
-                >
-                  3d
-                </h2>
-                <h2
-                  className={`"font-bold text-white" + ${
-                    range === 168 ? "text-highlight" : "text-white"
-                  }`}
-                  onClick={() => setRange(168)}
-                >
-                  7d
-                </h2>
+                  <svg
+                    width="24"
+                    height="24"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="w-6 h-6"
+                  >
+                    <path
+                      d="M9 18L15 12L9 6"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                  </svg>
+                </button>
+              </section>
+            </div>
+
+            {/* Scrollable Content Area */}
+            <div className="flex-1 overflow-y-auto">
+              <h3 className="font-radio font-bold text-sm text-white text-center">
+                Wave Height
+              </h3>
+
+              <WaveHeightGraph
+                GFSData={GFSData}
+                range={range}
+                currentHour={currentHour + windowStart}
+                increment={increment}
+                setIncrement={setIncrement}
+                windowStart={windowStart}
+              />
+
+              {/* Primary Swell Info - One Line Display */}
+              <div className="-mt-2">
+                <PrimarySwellInfo selectedGFSData={selectedGFSData} />
               </div>
 
-              {/* Right Arrow - Increase */}
-              <button
-                onClick={handleIncrease}
-                disabled={increment >= range && !canSlideRight}
-                className={`p-2 rounded-full ${
-                  increment >= range && !canSlideRight
-                    ? "text-gray cursor-not-allowed"
-                    : "text-white hover:text-highlight"
-                }`}
-              >
-                <svg
-                  width="24"
-                  height="24"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="w-6 h-6"
-                >
-                  <path
-                    d="M9 18L15 12L9 6"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                </svg>
-              </button>
-            </section>
+              {/* Wind Speed & Direction Graph */}
+              <div className="mt-6">
+                <h3 className="font-radio font-bold text-sm text-white text-center">
+                  Wind Speed & Direction
+                </h3>
+                <WindGraph
+                  windData={windData}
+                  range={range}
+                  currentHour={currentHour + windowStart}
+                  increment={increment}
+                  setIncrement={setIncrement}
+                  windowStart={windowStart}
+                />
 
-            <WaveHeightGraph
-              GFSData={GFSData}
-              range={range}
-              currentHour={currentHour + windowStart}
-              increment={increment}
-              setIncrement={setIncrement}
-              windowStart={windowStart}
-            />
+                {/* Primary Wind Info - One Line Display */}
+                {selectedWindData && (
+                  <PrimaryWindInfo windData={selectedWindData} />
+                )}
+              </div>
 
-            {/* <ForecastSigWidget
+              {/* <ForecastSigWidget
               significantData={significantData}
               day={targetDay}
               month={targetMonth}
@@ -259,6 +372,7 @@ function forecast() {
               min={currentMin}
               meridiem={meridiem}
             /> */}
+            </div>
           </div>
         </>
       )}
