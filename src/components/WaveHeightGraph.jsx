@@ -116,6 +116,12 @@ export default function WaveHeightGraph({
   if (Number.isFinite(maxHeight) && paddedMax - maxHeight < 0.5) {
     paddedMax += 1; // add one more whole-foot interval for visual padding
   }
+
+  // Calculate number of y-axis ticks based on scale
+  // Use 2-ft intervals for larger scales to reduce clutter
+  const tickInterval = paddedMax > 12 ? 2 : 1;
+  const numYTicks = Math.floor(paddedMax / tickInterval) + 1;
+
   const minTime = comp1Times[0];
   const maxTime = comp1Times[comp1Times.length - 1];
 
@@ -176,7 +182,7 @@ export default function WaveHeightGraph({
           yScale={yScale}
           width={xMax}
           height={yMax}
-          numTicksRows={paddedMax + 1}
+          numTicksRows={numYTicks}
           numTicksColumns={0} // suppress default vertical columns; custom guides drawn later
           top={0}
           left={margin.left}
@@ -286,20 +292,21 @@ export default function WaveHeightGraph({
           comp1Heights.length > 0 &&
           increment - 1 < comp1Heights.length && (
             <line
-              x1={xScale(increment - 1)}
-              x2={xScale(increment - 1)}
+              x1={xScale(increment - 1) + 1}
+              x2={xScale(increment - 1) + 1}
               y1={margin.top}
               y2={yMax}
               stroke={colors.accent}
               strokeWidth={1.5}
               strokeDasharray="4 4"
+              strokeOpacity={0.6}
             />
           )}
         {/* Y Axis */}
         <Axis
           hideZero
           scale={yScale}
-          numTicks={paddedMax + 1}
+          numTicks={numYTicks}
           left={margin.left}
           orientation="left"
           stroke={colors.darkGray}
